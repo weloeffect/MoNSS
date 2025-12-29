@@ -1,0 +1,57 @@
+extra.txt
+data_provenance.md
+single_hop.png
+multi_hop.png
+
+# Ignore the entire dbpedia folder
+data/raw/dbpedia/
+data/raw/
+
+# Explicitly ignore large DBpedia files
+data/raw/dbpedia/instance-types_lang=en_specific.ttl
+data/raw/dbpedia/mappingbased-objects_lang=en.ttl
+
+# Ignore large training files
+data/train/text2cypher_train.jsonl
+data/train/slm2_train_data.jsonl
+data/train/slm2_train_data_norm.jsonl
+data/train/slm2_train_data_entities.jsonl
+
+# Ignore processed data
+data/processed/nodes.csv
+data/processed/relationships.csv
+
+# Ignore test data
+data/test/
+
+# Ignore model files and checkpoints
+model/
+*.pth
+*.bin
+*.safetensors
+checkpoint-*/
+
+# Ignore results
+results/
+*.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db

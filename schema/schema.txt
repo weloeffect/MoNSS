@@ -1,0 +1,21 @@
+ENTITY TYPES
+n.type
+Book
+Film
+Organisation
+Person
+Place
+Politician
+School
+Scientist
+
+RELATION TYPES:
+r.type
+author
+birthPlace
+country
+director
+language
+producer
+starring
+writer
