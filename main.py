@@ -50,71 +50,71 @@
 
 
 #!/usr/bin/env python3
-"""
-Fix malformed JSONL file by identifying and removing bad lines.
-"""
-import json
-from pathlib import Path
+# """
+# Fix malformed JSONL file by identifying and removing bad lines.
+# """
+# import json
+# from pathlib import Path
 
-INPUT_FILE = Path(__file__).parent / "data" / "train" / "slm1_adversarial_test.jsonl"
-OUTPUT_FILE = Path(__file__).parent / "data" / "train" / "slm1_adversarial_test_fixed.jsonl"
+# INPUT_FILE = Path(__file__).parent / "data" / "train" / "slm1_adversarial_test.jsonl"
+# OUTPUT_FILE = Path(__file__).parent / "data" / "train" / "slm1_adversarial_test_fixed.jsonl"
 
 
-def fix_jsonl():
-    print("=" * 80)
-    print("Fixing adversarial JSONL file")
-    print("=" * 80)
-    print("Input: " + str(INPUT_FILE))
-    print("Output: " + str(OUTPUT_FILE))
+# def fix_jsonl():
+#     print("=" * 80)
+#     print("Fixing adversarial JSONL file")
+#     print("=" * 80)
+#     print("Input: " + str(INPUT_FILE))
+#     print("Output: " + str(OUTPUT_FILE))
     
-    valid_lines = []
-    invalid_lines = []
+#     valid_lines = []
+#     invalid_lines = []
     
-    with open(INPUT_FILE, "r", encoding="utf-8") as f:
-        for line_num, line in enumerate(f, 1):
-            line = line.strip()
-            if not line:
-                continue
+#     with open(INPUT_FILE, "r", encoding="utf-8") as f:
+#         for line_num, line in enumerate(f, 1):
+#             line = line.strip()
+#             if not line:
+#                 continue
             
-            try:
-                data = json.loads(line)
-                # Validate required fields
-                if "input" in data and "output" in data:
-                    valid_lines.append(data)
-                else:
-                    print("Line " + str(line_num) + ": Missing required fields")
-                    invalid_lines.append((line_num, line, "Missing fields"))
-            except json.JSONDecodeError as e:
-                print("Line " + str(line_num) + ": JSON error - " + str(e))
-                print("  Content: " + line[:100] + "...")
-                invalid_lines.append((line_num, line, str(e)))
+#             try:
+#                 data = json.loads(line)
+#                 # Validate required fields
+#                 if "input" in data and "output" in data:
+#                     valid_lines.append(data)
+#                 else:
+#                     print("Line " + str(line_num) + ": Missing required fields")
+#                     invalid_lines.append((line_num, line, "Missing fields"))
+#             except json.JSONDecodeError as e:
+#                 print("Line " + str(line_num) + ": JSON error - " + str(e))
+#                 print("  Content: " + line[:100] + "...")
+#                 invalid_lines.append((line_num, line, str(e)))
     
-    print("")
-    print("=" * 80)
-    print("Results:")
-    print("  Valid lines: " + str(len(valid_lines)))
-    print("  Invalid lines: " + str(len(invalid_lines)))
+#     print("")
+#     print("=" * 80)
+#     print("Results:")
+#     print("  Valid lines: " + str(len(valid_lines)))
+#     print("  Invalid lines: " + str(len(invalid_lines)))
     
-    if len(valid_lines) > 0:
-        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-            for data in valid_lines:
-                f.write(json.dumps(data, ensure_ascii=False) + "\n")
-        print("")
-        print("Fixed file saved to: " + str(OUTPUT_FILE))
-        print("")
-        print("To use the fixed file, run:")
-        print("  mv slm1_adversarial_test.jsonl slm1_adversarial_test_backup.jsonl")
-        print("  mv slm1_adversarial_test_fixed.jsonl slm1_adversarial_test.jsonl")
+#     if len(valid_lines) > 0:
+#         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+#             for data in valid_lines:
+#                 f.write(json.dumps(data, ensure_ascii=False) + "\n")
+#         print("")
+#         print("Fixed file saved to: " + str(OUTPUT_FILE))
+#         print("")
+#         print("To use the fixed file, run:")
+#         print("  mv slm1_adversarial_test.jsonl slm1_adversarial_test_backup.jsonl")
+#         print("  mv slm1_adversarial_test_fixed.jsonl slm1_adversarial_test.jsonl")
     
-    if len(invalid_lines) > 0:
-        print("")
-        print("Invalid lines details:")
-        for line_num, content, error in invalid_lines[:5]:
-            print("  Line " + str(line_num) + ": " + error)
-            print("    " + content[:80] + "...")
+#     if len(invalid_lines) > 0:
+#         print("")
+#         print("Invalid lines details:")
+#         for line_num, content, error in invalid_lines[:5]:
+#             print("  Line " + str(line_num) + ": " + error)
+#             print("    " + content[:80] + "...")
     
-    print("=" * 80)
+#     print("=" * 80)
 
 
-if __name__ == "__main__":
-    fix_jsonl()
+# if __name__ == "__main__":
+#     fix_jsonl()
