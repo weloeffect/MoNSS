@@ -116,5 +116,5 @@
 #     print("=" * 80)
 
 
-# if __name__ == "__main__":
-#     fix_jsonl()
+if __name__ == "__main__":
+    fix_jsonl()
