@@ -12,7 +12,7 @@ from pathlib import Path
 
 print("Basic imports done", flush=True)
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
 from tqdm import tqdm
 
@@ -35,18 +35,39 @@ def load_model():
     print("Base model: " + BASE_MODEL_ID)
     print("Adapter: " + str(ADAPTER_PATH))
     
+    # Clear GPU cache before loading
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        print("GPU cache cleared")
+    
+    # Configure 4-bit quantization for memory efficiency
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_use_double_quant=True,
+    )
+    
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL_ID)
     tokenizer.pad_token = tokenizer.eos_token
     
+    print("Loading base model with 4-bit quantization...")
     base_model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL_ID,
-        load_in_4bit=True,
-        torch_dtype=torch.float16,
-        device_map="auto"
+        quantization_config=bnb_config,
+        device_map="auto",
+        max_memory={0: "6GiB", "cpu": "30GiB"},
+        low_cpu_mem_usage=True,
     )
     
+    print("Loading LoRA adapter...")
     model = PeftModel.from_pretrained(base_model, str(ADAPTER_PATH))
     model.eval()
+    
+    # Clear cache after loading
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    
     print("Model loaded successfully!")
     return tokenizer, model
 
@@ -93,7 +114,78 @@ def normalize_text(text):
     return text
 
 
-def compute_metrics(pred, gt, entities):
+def extract_entities_from_sparql_result(sparql_input):
+    """
+    Extract entities from the SPARQL Result section.
+    
+    Returns: set of entity values
+    """
+    entities = set()
+    
+    # Find SPARQL Result section
+    result_match = re.search(r'SPARQL Result:\s*\n(.*?)(?:\n\n|$)', sparql_input, re.DOTALL)
+    if not result_match:
+        return entities
+    
+    result_section = result_match.group(1)
+    
+    # Extract values after colons (e.g., "- place: Melbourne" -> "Melbourne")
+    pattern = r'-\s+\w+:\s+(.+?)(?=\n|$)'
+    matches = re.findall(pattern, result_section)
+    
+    for match in matches:
+        entity = match.strip()
+        if entity and entity.lower() not in ['empty', 'none', 'null']:
+            entities.add(entity)
+    
+    return entities
+
+
+def check_hallucination(predicted, kg_entities):
+    """
+    Check if predicted output contains entities not in SPARQL results.
+    
+    Returns: (has_hallucination, matched_entities, hallucinations)
+    """
+    pred_lower = predicted.lower()
+    matched = set()
+    
+    # Check which KG entities appear in output
+    for entity in kg_entities:
+        if entity.lower() in pred_lower:
+            matched.add(entity)
+    
+    # Extract capitalized phrases (potential entities)
+    capitalized_pattern = r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b'
+    output_entities = set(re.findall(capitalized_pattern, predicted))
+    
+    # Find hallucinations (entities in output not from KG)
+    hallucinations = set()
+    for output_entity in output_entities:
+        is_from_kg = False
+        for kg_entity in kg_entities:
+            if (output_entity.lower() in kg_entity.lower() or 
+                kg_entity.lower() in output_entity.lower()):
+                is_from_kg = True
+                break
+        
+        if not is_from_kg:
+            hallucinations.add(output_entity)
+    
+    has_hallucination = len(hallucinations) > 0
+    return has_hallucination, matched, hallucinations
+
+
+def compute_entity_coverage(matched_entities, kg_entities):
+    """
+    Compute what % of KG entities appear in the output.
+    """
+    if not kg_entities:
+        return 1.0
+    return len(matched_entities) / len(kg_entities)
+
+
+def compute_metrics(pred, gt, entities, sparql_input):
     exact_match = normalize_text(pred) == normalize_text(gt)
     
     pred_lower = pred.lower()
@@ -124,7 +216,21 @@ def compute_metrics(pred, gt, entities):
         else:
             bleu = 0.0
     
-    return exact_match, contains_answer, round(bleu, 4)
+    # NEW: Hallucination detection and entity coverage
+    kg_entities = extract_entities_from_sparql_result(sparql_input)
+    has_hallucination, matched_entities, hallucinations = check_hallucination(pred, kg_entities)
+    entity_coverage = compute_entity_coverage(matched_entities, kg_entities)
+    
+    return {
+        'exact_match': exact_match,
+        'contains_answer': contains_answer,
+        'bleu_score': round(bleu, 4),
+        'has_hallucination': has_hallucination,
+        'hallucinations': list(hallucinations),
+        'entity_coverage': round(entity_coverage, 4),
+        'kg_entities': list(kg_entities),
+        'matched_entities': list(matched_entities)
+    }
 
 
 def run_inference(test_data, tokenizer, model):
@@ -138,7 +244,7 @@ def run_inference(test_data, tokenizer, model):
         entities = example.get("entities", {})
         
         predicted = generate_response(sparql_input, instruction, tokenizer, model)
-        exact_match, contains_answer, bleu = compute_metrics(predicted, ground_truth, entities)
+        metrics = compute_metrics(predicted, ground_truth, entities, sparql_input)
         
         prediction = {
             "index": i + 1,
@@ -146,11 +252,7 @@ def run_inference(test_data, tokenizer, model):
             "ground_truth": ground_truth,
             "predicted": predicted,
             "entities": entities,
-            "metrics": {
-                "exact_match": exact_match,
-                "contains_answer": contains_answer,
-                "bleu_score": bleu
-            }
+            "metrics": metrics
         }
         predictions.append(prediction)
         
@@ -158,7 +260,9 @@ def run_inference(test_data, tokenizer, model):
             print("\n[Example " + str(i + 1) + "]")
             print("Ground Truth: " + ground_truth)
             print("Predicted: " + predicted)
-            print("Exact Match: " + str(exact_match))
+            print("Exact Match: " + str(metrics['exact_match']))
+            print("Hallucination: " + str(metrics['has_hallucination']))
+            print("Entity Coverage: " + str(metrics['entity_coverage']))
     
     return predictions
 
@@ -168,6 +272,11 @@ def compute_aggregate_metrics(predictions):
     exact = sum(1 for p in predictions if p["metrics"]["exact_match"])
     contains = sum(1 for p in predictions if p["metrics"]["contains_answer"])
     avg_bleu = sum(p["metrics"]["bleu_score"] for p in predictions) / total if total else 0
+    
+    # NEW: Hallucination metrics
+    hallucination_count = sum(1 for p in predictions if p["metrics"]["has_hallucination"])
+    coverage_scores = [p["metrics"]["entity_coverage"] for p in predictions]
+    avg_coverage = sum(coverage_scores) / len(coverage_scores) if coverage_scores else 0
     
     idk_total = 0
     idk_correct = 0
@@ -182,9 +291,11 @@ def compute_aggregate_metrics(predictions):
     if total > 0:
         exact_rate = round(exact / total, 4)
         contains_rate = round(contains / total, 4)
+        hallucination_rate = round(hallucination_count / total, 4)
     else:
         exact_rate = 0
         contains_rate = 0
+        hallucination_rate = 0
     
     if idk_total > 0:
         idk_rate = round(idk_correct / idk_total, 4)
@@ -196,6 +307,8 @@ def compute_aggregate_metrics(predictions):
         "exact_match": {"count": exact, "rate": exact_rate},
         "contains_answer": {"count": contains, "rate": contains_rate},
         "avg_bleu_score": round(avg_bleu, 4),
+        "hallucination": {"count": hallucination_count, "rate": hallucination_rate},
+        "entity_coverage": {"avg": round(avg_coverage, 4), "scores": coverage_scores},
         "idk_handling": {"total": idk_total, "correct": idk_correct, "rate": idk_rate}
     }
 
@@ -241,6 +354,10 @@ def main():
     print("Exact Match: " + str(round(metrics['exact_match']['rate'] * 100, 2)) + "%")
     print("Contains Answer: " + str(round(metrics['contains_answer']['rate'] * 100, 2)) + "%")
     print("Avg BLEU: " + str(metrics['avg_bleu_score']))
+    print("\n--- Hallucination & Entity Coverage ---")
+    print("Hallucination Rate: " + str(round(metrics['hallucination']['rate'] * 100, 2)) + "%")
+    print("Avg Entity Coverage: " + str(round(metrics['entity_coverage']['avg'] * 100, 2)) + "%")
+    print("\n--- Critical Failure Constraint ---")
     print("IDK Handling: " + str(round(metrics['idk_handling']['rate'] * 100, 2)) + "%")
     print("=" * 60)
     print("Benchmarking complete!")
