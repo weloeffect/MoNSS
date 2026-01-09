@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-SLM2 Inference and Benchmarking Script
+SLM2 Inference and Benchmarking Script - CORRECTED VERSION
+Copy this entire content to your VM to replace slm2_inference.py
 """
 print("Script starting...", flush=True)
 
@@ -40,6 +41,7 @@ def load_model():
     # Clear GPU cache before loading
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
         import gc
         gc.collect()
         print("GPU cache cleared")
@@ -56,33 +58,59 @@ def load_model():
     tokenizer.pad_token = tokenizer.eos_token
     
     print("Loading base model with 4-bit quantization...")
+    # Use much more aggressive memory limits
     base_model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL_ID,
         quantization_config=bnb_config,
         device_map="auto",
-        max_memory={0: "5GiB", "cpu": "30GiB"},  # Reduced GPU memory limit
+        max_memory={0: "3.5GiB", "cpu": "40GiB"},  # Very conservative GPU limit
         low_cpu_mem_usage=True,
-        offload_folder="offload",  # Enable CPU offloading
+        offload_folder="offload",
+        torch_dtype=torch.float16,
     )
     
-    # Clear cache before loading adapter
+    # Aggressive memory cleanup
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
         import gc
         gc.collect()
+        print(f"Memory after base model: {torch.cuda.memory_allocated()/1024**3:.2f}GB")
     
-    print("Loading LoRA adapter...")
-    model = PeftModel.from_pretrained(
-        base_model, 
-        str(ADAPTER_PATH),
-        device_map="auto",
-        max_memory={0: "5GiB", "cpu": "30GiB"},
-    )
+    print("Loading LoRA adapter with CPU offloading...")
+    try:
+        # Try loading adapter with very conservative settings
+        model = PeftModel.from_pretrained(
+            base_model, 
+            str(ADAPTER_PATH),
+            device_map="auto",
+            max_memory={0: "3.5GiB", "cpu": "40GiB"},
+            offload_folder="offload",
+            low_cpu_mem_usage=True,
+        )
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower():
+            print("⚠️ GPU memory exhausted, falling back to CPU-only adapter loading...")
+            torch.cuda.empty_cache()
+            import gc
+            gc.collect()
+            
+            # Force adapter to CPU first
+            model = PeftModel.from_pretrained(
+                base_model, 
+                str(ADAPTER_PATH),
+                device_map={"": "cpu"},  # Force CPU
+            )
+            print("✅ Adapter loaded on CPU, moving selected parts to GPU...")
+        else:
+            raise e
+    
     model.eval()
     
-    # Clear cache after loading
+    # Final cleanup
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
+        print(f"Final memory: {torch.cuda.memory_allocated()/1024**3:.2f}GB")
     
     print("Model loaded successfully!")
     return tokenizer, model
