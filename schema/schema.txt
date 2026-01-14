@@ -1,21 +1,315 @@
-ENTITY TYPES
-n.type
-Book
-Film
-Organisation
-Person
-Place
-Politician
-School
-Scientist
+DBpedia SPARQL Schema
+Generated from training data (slm1_train.jsonl)
 
-RELATION TYPES:
-r.type
-author
-birthPlace
-country
-director
-language
-producer
-starring
-writer
+ENTITY TYPES:
+Entity (all nodes are typed as entities in the knowledge graph)
+
+RELATION TYPES (DBpedia Ontology Properties):
+Properties extracted from training data - 243 unique properties
+
+Academic & Education:
+- academicDiscipline
+- almaMater
+- college
+- doctoralAdvisor
+- doctoralStudent
+- doctoralStudents
+- education
+- university
+
+Arts & Culture:
+- anthem
+- architect
+- architecturalStyle
+- artist
+- bandMember
+- cinematography
+- director
+- editing
+- editor
+- genre
+- literaryGenre
+- musicComposer
+- musicFusionGenre
+- musicSubgenre
+- notableWork
+- significantBuilding
+- significantBuildings
+- significantProject
+- stylisticOrigin
+- stylisticOrigins
+- writer
+
+Aviation & Space:
+- aircraftAttack
+- aircraftFighter
+- aircraftTrainer
+- aircraftTransport
+- associatedRocket
+- launchSite
+- mission
+- rockets
+- selection
+- timeInSpace
+
+Biography:
+- birthPlace
+- child
+- children
+- citizenship
+- deathCause
+- deathPlace
+- ethnicity
+- ethnicGroup
+- ethnicGroups
+- family
+- knownFor
+- nationality
+- occupation
+- placeOfBirth
+- placeOfDeath
+- religion
+- residence
+- spouse
+
+Business & Organization:
+- affiliation
+- affiliations
+- chairman
+- chief1Name
+- currency
+- division
+- employer
+- founder
+- foundedBy
+- generalManager
+- headquarters
+- headquarter
+- industry
+- keyPeople
+- keyPerson
+- owningCompany
+- owner
+- parent
+- parentCompany
+- product
+- profession
+- publisher
+- regionServed
+- subsid
+- subsidiary
+
+Creative Works:
+- author
+- award
+- awards
+- comparable
+- creator
+- creators
+- creatorOfDish
+- distributor
+- followedBy
+- mediaType
+- precededBy
+- predecessor
+- previousWork
+- recordedIn
+- recordLabel
+- subsequentWork
+- title
+
+Geography & Location:
+- areaCode
+- areaTotal
+- arrondissement
+- capital
+- ceremonialCounty
+- city
+- cityServed
+- country
+- countryOrigin
+- countySeat
+- demonym
+- elevation
+- higher
+- hometown
+- isPartOf
+- jurisdiction
+- largestCity
+- location
+- locationCity
+- locationCountry
+- locationTown
+- northeast
+- officialLanguage
+- place
+- postalCode
+- region
+- settlementType
+- spokenIn
+- state
+- stateOfOrigin
+- subdivisionName
+- timeZone
+- union
+- utcOffset
+- west
+
+Government & Politics:
+- deputy
+- foundation
+- governor
+- governingBody
+- governmentType
+- leader
+- leaderName
+- leaderParty
+- leaderTitle
+- mayor
+- monarch
+- office
+- party
+- patronSaint
+- president
+- primeminister
+- senators
+- vicepresident
+
+Military:
+- battle
+- battles
+- branch
+- commander
+- crew2Up
+- garrison
+- isPartOfMilitaryConflict
+- militaryBranch
+- service
+
+Music:
+- associatedActs
+- associatedBand
+- associatedMusicalArtist
+- fusiongenres
+- instrument
+- label
+- recordLabel
+
+Science & Nature:
+- bird
+- class
+- derivative
+- derivatives
+- discipline
+- discoverer
+- discovered
+- field
+- fossil
+- gemstone
+- genus
+- order
+- ordo
+- unrankedDivisio
+
+Sports:
+- assembly
+- athletics
+- champions
+- clubs
+- coach
+- course
+- currentclub
+- currentteam
+- debutTeam
+- draftTeam
+- formerTeam
+- ground
+- league
+- manager
+- managerClub
+- managerclubs
+- mascot
+- mostChamps
+- nationalteam
+- position
+- season
+- sport
+- team
+- tenant
+- youthclubs
+
+Technology & Engineering:
+- bodyStyle
+- builder
+- buildingType
+- colour
+- comparable
+- dedicatedTo
+- designCompany
+- designer
+- developer
+- engine
+- fate
+- hasVariant
+- ingredient
+- layout
+- mainIngredient
+- manufacturer
+- material
+- partsType
+- powerType
+- related
+- relatedMeanOfTransportation
+- shipBuilder
+- shipOperator
+- shipOwner
+- site
+- sites
+- status
+- type
+- unit
+- variations
+
+Miscellaneous:
+- abbreviation
+- activeYearsEndDate
+- activeYearsEndYear
+- alterEgo
+- associatedRocket
+- background
+- capacity
+- completionDate
+- dateOfBirth
+- deathDate
+- floorCount
+- foundationPlace
+- foundingDate
+- foundingYear
+- free
+- fullname
+- icaoLocationIdentifier
+- influencedBy
+- isbn
+- issn
+- language
+- languages
+- nickname
+- numberOfStudents
+- oclc
+- operator
+- origin
+- p
+- part
+- r1Surface
+- r2Surface
+- r3Surface
+- runwayDesignation
+- runwayLength
+- runwaySurface
+- startDate
+- starring
+- successor
+- years
+
+Note: Properties with ~ prefix in nodes.csv indicate inverse relationships.
+The actual SPARQL queries use DBpedia ontology namespace: dbo:propertyName
