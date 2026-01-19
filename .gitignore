@@ -25,7 +25,7 @@ data/processed/relationships.csv
 data/test/
 
 # Ignore model files and checkpoints
-model/
+# model/
 *.pth
 *.bin
 *.safetensors
