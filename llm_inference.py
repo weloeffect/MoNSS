@@ -237,7 +237,18 @@ def batch_inference(model, tokenizer, input_file, output_file, task="text2sparql
                 if idx in processed_indices:
                     continue
                 
-                data = json.loads(line.strip())
+                # Skip empty lines
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # Parse JSON with error handling
+                try:
+                    data = json.loads(line)
+                except json.JSONDecodeError as e:
+                    print(f"\n[ERROR] Failed to parse JSON at line {idx+1}: {e}")
+                    print(f"[ERROR] Line content: {line[:200]}...")
+                    continue
                 
                 if task == "text2sparql":
                     question = data.get('input', data.get('question', ''))
