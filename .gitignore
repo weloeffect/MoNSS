@@ -2,11 +2,11 @@ extra.txt
 data_provenance.md
 single_hop.png
 multi_hop.png
-
+schema/schema.txt
 # Ignore the entire dbpedia folder
 data/raw/dbpedia/
 data/raw/
-
+data/misc/
 # Explicitly ignore large DBpedia files
 data/raw/dbpedia/instance-types_lang=en_specific.ttl
 data/raw/dbpedia/mappingbased-objects_lang=en.ttl

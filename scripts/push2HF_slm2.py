@@ -5,8 +5,8 @@ login()
 
 # Upload the trained LoRA adapters
 upload_folder(
-    folder_path="outputs/Llama-3-8B-text2sparql-qlora",
-    repo_id="weloSai/Llama-8b-SPARQL2Text",
+    folder_path="outputs/Qwen2.5-1.5B-SPARQL2TEXT",
+    repo_id="weloSai/Qwen2.5-1.5B-SPARQL2TEXT",
     repo_type="model"
 )
 
