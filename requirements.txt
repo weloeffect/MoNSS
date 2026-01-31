@@ -1,0 +1,26 @@
+# MoNSSpecialists — Python dependencies
+# Install: pip install -r requirements.txt
+
+# Core ML / inference
+torch>=2.0.0
+transformers>=4.36.0
+accelerate>=0.25.0
+
+# PEFT (LoRA / QLoRA)
+peft>=0.7.0
+
+# Training (SFTTrainer, QLoRA)
+trl>=0.7.0
+bitsandbytes>=0.41.0
+
+# Datasets
+datasets>=2.16.0
+
+# Hugging Face Hub (model upload)
+huggingface_hub>=0.20.0
+
+# Utilities
+tqdm>=4.65.0
+
+# Optional: for Phi-3 / trust_remote_code models
+# safetensors>=0.4.0
