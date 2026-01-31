@@ -3,9 +3,9 @@ from peft import PeftModel
 import torch
 
 # 1. Point to the Base Model used in training
-BASE_MODEL_ID = "meta-llama/Meta-Llama-3-8B"
+BASE_MODEL_ID = "Qwen/Qwen2.5-1.5B"
 # 2. Point to the folder where main_slm2.py saved the adapter
-ADAPTER_PATH = "outputs/Llama-3-8B-sparql2Text"
+ADAPTER_PATH = "outputs/Qwen2.5-1.5B-SPARQL2TEXT"
 
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL_ID)
 

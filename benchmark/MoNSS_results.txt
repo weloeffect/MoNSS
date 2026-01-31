@@ -1,0 +1,22 @@
+======================================================================
+MoNSS Benchmarking Results:
+======================================================================
+
+Overall Performance:
+  Total Examples: 3494
+  Correct: 2813
+  Incorrect: 681
+  Overall Accuracy: 80.5%
+
+Single-Hop Reasoning:
+  Total Examples: 1527
+  Correct: 1323
+  Incorrect: 204
+  Single-Hop Accuracy: 86.6%
+
+Two-Hop Reasoning:
+  Total Examples: 1967
+  Correct: 1490
+  Incorrect: 477
+  Two-Hop Accuracy: 75.7%
+======================================================================

@@ -1,0 +1,22 @@
+======================================================================
+Llama-3.2-3B (Vanilla) Benchmarking Results:
+======================================================================
+
+Overall Performance:
+  Total Examples: 3494
+  Correct: 1807
+  Incorrect: 1687
+  Overall Accuracy: 51.72%
+
+Single-Hop Reasoning:
+  Total Examples: 1527
+  Correct: 747
+  Incorrect: 780
+  Single-Hop Accuracy: 48.92%
+
+Two-Hop Reasoning:
+  Total Examples: 1967
+  Correct: 1060
+  Incorrect: 907
+  Two-Hop Accuracy: 53.89%
+======================================================================

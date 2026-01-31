@@ -1,0 +1,22 @@
+======================================================================
+Phi-3 Benchmarking Results:
+======================================================================
+
+Overall Performance:
+  Total Examples: 3496
+  Correct: 3020
+  Incorrect: 476
+  Overall Accuracy: 86.3%
+
+Single-Hop Reasoning:
+  Total Examples: 1529
+  Correct: 1400
+  Incorrect: 129
+  Single-Hop Accuracy: 91.5%
+
+Two-Hop Reasoning:
+  Total Examples: 1967
+  Correct: 1620
+  Incorrect: 307
+  Two-Hop Accuracy: 82.3%
+======================================================================
